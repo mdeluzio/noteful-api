@@ -164,5 +164,102 @@ describe(`Folders Endpoints`, () => {
         });
     })
 
+    describe(`DELETE /api/folders/:folder_id`, () => {
 
+        context(`Given no folders in the database`, () => {
+            
+            it(`responds with 404 and an error message`, () => {
+                const idToRemove = 123456;
+
+                return supertest(app)
+                    .delete(`/api/folders/${idToRemove}`)
+                    .expect(404, {
+                        error: { message: `Folder doesn't exist` }
+                    })
+            });
+        });
+        
+        context(`Given there are folders in the database`, () => {
+            const testFolders = makeFoldersArray();
+
+            beforeEach(`Insert the test folders`, () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+            });
+
+            it(`responds with 204 and removes the folder`, () => {
+                const idToRemove = 2;
+                const expectedFolders = testFolders.filter(folder => folder.id !== idToRemove);
+
+                return supertest(app)
+                    .delete(`/api/folders/${idToRemove}`)
+                    .expect(204)
+                    .then(res => 
+                        supertest(app)
+                        .get(`/api/folders`)
+                        .expect(expectedFolders)
+                    )
+            });
+        });
+    })
+
+    describe.only(`PATCH /api/folders/:folder_id`, () => {
+
+        context(`Given no folders in the database`, () => {
+
+            it(`responds with 404 and an error message`, () => {
+                const folderId = 123456;
+
+                return supertest(app)
+                    .patch(`/api/folders/${folderId}`)
+                    .expect(404, {
+                        error: { message: `Folder doesn't exist` }
+                    })
+            });
+        });
+
+        context(`Given there are folders in the database`, () => {
+            const testFolders = makeFoldersArray();
+
+            beforeEach(`Insert test folders`, () => {
+                return db   
+                    .into('noteful_folders')
+                    .insert(testFolders)
+            });
+
+            it(`responds with 204 and updates the folder`, () => {
+                const idToUpdate = 2;
+                const updateFolder = {
+                    name: 'Updated Folder Name'
+                };
+
+                const expectedFolder = {
+                    ...testFolders[idToUpdate - 1],
+                    ...updateFolder
+                };
+
+                return supertest(app)
+                    .patch(`/api/folders/${idToUpdate}`)
+                    .send(updateFolder)
+                    .expect(204)
+                    .then( res => 
+                        supertest(app)
+                        .get(`/api/folders/${idToUpdate}`)
+                        .expect(expectedFolder)
+                    )
+            });
+
+            it(`responds with 400 when no required fields supplied`, () => {
+                const idToUpdate = 3;
+
+                return supertest(app)
+                    .patch(`/api/folders/${idToUpdate}`)
+                    .send({ notName: 'this is not name and should be ignored' })
+                    .expect(400, {
+                        error: { message: `Request must contain 'name'.`}
+                    })
+            });
+        });
+    })
 })

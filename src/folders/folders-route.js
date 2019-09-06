@@ -66,5 +66,34 @@ foldersRouter
     .get((req, res, next) => {
         res.json(serializeFolder(res.folder))
     })
+    .delete((req, res, next) => {
+        FoldersService.deleteFolder(
+            req.app.get('db'),
+            req.params.folder_id
+        )
+        .then(() => {
+            res.status(204).end()
+        })
+    })
+    .patch(jsonParser, (req, res, next) => {
+        const { name } = req.body;
+        const updateFolder = { name };
+
+        const numberOfValues = Object.values(updateFolder).filter(Boolean).length;
+        if(numberOfValues === 0) {
+            return res.status(400).json({
+                error: { message: `Request must contain 'name'.`}
+            })
+        }
+
+        FoldersService.updateFolder(
+            req.app.get('db'),
+            req.params.folder_id,
+            updateFolder
+        )
+        .then(() => {
+            res.status(204).end()
+        })
+    })
 
 module.exports = foldersRouter;
