@@ -204,7 +204,7 @@ describe(`Folders Endpoints`, () => {
         });
     })
 
-    describe.only(`PATCH /api/folders/:folder_id`, () => {
+    describe(`PATCH /api/folders/:folder_id`, () => {
 
         context(`Given no folders in the database`, () => {
 
