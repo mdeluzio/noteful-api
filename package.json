@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "migrate": "postgrator --config postgrator-config.js",
-    "predeploy": "npm audit",
+    "migrate-production": "postgrator --config postgrator-production-config.js",
+    "predeploy": "npm audit && npm run migrate-production",
     "deploy": "git push heroku master"
   },
   "keywords": [],
